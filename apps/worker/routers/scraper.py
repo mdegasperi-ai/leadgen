@@ -12,7 +12,7 @@ class GoogleMapsRequest(BaseModel):
 
 
 class LinkedInRequest(BaseModel):
-    keywords: str
+    query: str
     location: str | None = None
     max_results: int = 20
 
@@ -29,7 +29,7 @@ async def scrape_google_maps(req: GoogleMapsRequest):
 @router.post("/linkedin")
 async def scrape_linkedin(req: LinkedInRequest):
     try:
-        leads = await run_linkedin_scraper(req.keywords, req.location, req.max_results)
+        leads = await run_linkedin_scraper(req.query, req.location, req.max_results)
         return {"leads": leads, "count": len(leads)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
