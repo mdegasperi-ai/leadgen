@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import Link from 'next/link'
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
@@ -45,9 +46,9 @@ export default async function DashboardPage() {
             <p className="text-4xl mb-3">🔍</p>
             <p className="font-medium">Nessun lead ancora</p>
             <p className="text-sm mt-1">Avvia la tua prima ricerca per generare lead</p>
-            <button className="mt-6 px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-semibold hover:bg-sky-600 transition">
+            <Link href="/search" className="mt-6 inline-block px-5 py-2 bg-sky-500 text-white rounded-lg text-sm font-semibold hover:bg-sky-600 transition">
               Nuova ricerca
-            </button>
+            </Link>
           </div>
         </div>
       </div>
