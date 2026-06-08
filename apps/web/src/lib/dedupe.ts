@@ -4,11 +4,15 @@
  * Returns null when there's not enough info to dedupe on.
  */
 export function buildDedupeKey(lead: {
+  email?: string | null
   phone?: string | null
   website?: string | null
   name?: string | null
   address?: string | null
 }): string | null {
+  const email = (lead.email || '').toLowerCase().trim()
+  if (email.includes('@')) return `email:${email}`
+
   const phone = (lead.phone || '').replace(/[^\d]/g, '')
   if (phone.length >= 6) return `phone:${phone}`
 

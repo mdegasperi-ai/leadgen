@@ -115,13 +115,18 @@ export default async function DashboardPage() {
                         {lead.scoreReason && <div className="text-xs text-slate-400 italic mt-1 max-w-xs">{lead.scoreReason}</div>}
                       </td>
                       <td className="px-6 py-4 space-y-1">
+                        {lead.email && (
+                          <a href={`mailto:${lead.email}`} className="text-sky-600 hover:underline block truncate max-w-[180px]">
+                            ✉️ {lead.email}
+                          </a>
+                        )}
                         {lead.phone && <div className="text-slate-600">📞 {lead.phone}</div>}
                         {lead.website && (
-                          <a href={lead.website} target="_blank" rel="noreferrer" className="text-sky-600 hover:underline block truncate max-w-[160px]">
+                          <a href={lead.website} target="_blank" rel="noreferrer" className="text-sky-600 hover:underline block truncate max-w-[180px]">
                             🌐 {lead.website.replace(/^https?:\/\//, '')}
                           </a>
                         )}
-                        {!lead.phone && !lead.website && <span className="text-slate-300">—</span>}
+                        {!lead.email && !lead.phone && !lead.website && <span className="text-slate-300">—</span>}
                       </td>
                       <td className="px-6 py-4 max-w-sm">
                         {lead.message ? (

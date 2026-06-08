@@ -128,6 +128,7 @@ export async function POST(req: Request) {
           data: {
             userId: user.id,
             name: lead.name,
+            email: lead.email,
             phone: lead.phone,
             website: lead.website,
             address: lead.address,

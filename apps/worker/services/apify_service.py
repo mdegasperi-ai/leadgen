@@ -11,12 +11,22 @@ async def run_google_maps_scraper(query: str, location: str, max_results: int) -
         "maxCrawledPlacesPerSearch": max_results,
         "language": "it",
         "skipClosedPlaces": False,
+        "scrapeContacts": True,  # extract emails/socials from the place website
     }
     run = client.actor("compass/crawler-google-places").call(run_input=run_input)
     items = []
     for item in client.dataset(run["defaultDatasetId"]).iterate_items():
+        # email can come back under a few shapes depending on the actor version
+        email = None
+        emails = item.get("emails") or item.get("contactDetails", {}).get("emails")
+        if isinstance(emails, list) and emails:
+            email = emails[0]
+        elif isinstance(emails, str):
+            email = emails
+
         items.append({
             "name": item.get("title"),
+            "email": email,
             "phone": item.get("phone"),
             "website": item.get("website"),
             "address": item.get("address"),

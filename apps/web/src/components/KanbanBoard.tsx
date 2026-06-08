@@ -7,6 +7,7 @@ type Lead = {
   name: string | null
   company: string | null
   title: string | null
+  email: string | null
   phone: string | null
   website: string | null
   address: string | null
@@ -204,6 +205,11 @@ function LeadDrawer({
         {/* Contact info */}
         <div className="space-y-1 text-sm mb-5">
           {lead.address && <p className="text-slate-500">📍 {lead.address}</p>}
+          {lead.email && (
+            <a href={`mailto:${lead.email}`} className="text-sky-600 hover:underline block">
+              ✉️ {lead.email}
+            </a>
+          )}
           {lead.phone && <p className="text-slate-600">📞 {lead.phone}</p>}
           {lead.website && (
             <a href={lead.website} target="_blank" rel="noreferrer" className="text-sky-600 hover:underline block">

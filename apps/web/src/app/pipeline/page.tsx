@@ -17,7 +17,7 @@ export default async function PipelinePage() {
     orderBy: [{ score: 'desc' }, { createdAt: 'desc' }],
     take: 500,
     select: {
-      id: true, name: true, company: true, title: true, phone: true, website: true,
+      id: true, name: true, company: true, title: true, email: true, phone: true, website: true,
       address: true, score: true, scoreReason: true, message: true, status: true,
       notes: true, tags: true, source: true,
     },
