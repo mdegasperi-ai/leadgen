@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
+import { DeleteLeadButton, DeleteAllButton } from '@/components/LeadActions'
 
 function scoreColor(score: number | null) {
   if (score == null) return 'bg-slate-100 text-slate-400'
@@ -67,7 +68,10 @@ export default async function DashboardPage() {
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
             <h2 className="font-semibold text-slate-800">I tuoi lead</h2>
-            <span className="text-sm text-slate-400">{leads.length} totali</span>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-slate-400">{leads.length} totali</span>
+              <DeleteAllButton count={leads.length} />
+            </div>
           </div>
 
           {leads.length === 0 ? (
@@ -87,6 +91,7 @@ export default async function DashboardPage() {
                     <th className="px-6 py-3 font-medium">Nome</th>
                     <th className="px-6 py-3 font-medium">Contatti</th>
                     <th className="px-6 py-3 font-medium">Messaggio AI</th>
+                    <th className="px-6 py-3 font-medium"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -118,6 +123,9 @@ export default async function DashboardPage() {
                         ) : (
                           <span className="text-slate-300">—</span>
                         )}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <DeleteLeadButton id={lead.id} />
                       </td>
                     </tr>
                   ))}
