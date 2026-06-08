@@ -112,8 +112,11 @@ export async function POST(req: Request) {
     ])
 
     return NextResponse.json({ success: true, count: savedLeads.length })
-  } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  } catch (error: any) {
+    console.error('[SEARCH ERROR]', error)
+    return NextResponse.json({
+      error: 'Internal server error',
+      detail: error?.message || String(error),
+    }, { status: 500 })
   }
 }
