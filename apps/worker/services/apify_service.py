@@ -6,11 +6,13 @@ client = ApifyClient(os.environ.get("APIFY_API_TOKEN", ""))
 
 async def run_google_maps_scraper(query: str, location: str, max_results: int) -> list:
     run_input = {
-        "searchStringsArray": [f"{query} {location}"],
+        "searchStringsArray": [query],
+        "locationQuery": location,
         "maxCrawledPlacesPerSearch": max_results,
         "language": "it",
+        "skipClosedPlaces": False,
     }
-    run = client.actor("apify/google-maps-scraper").call(run_input=run_input)
+    run = client.actor("compass/crawler-google-places").call(run_input=run_input)
     items = []
     for item in client.dataset(run["defaultDatasetId"]).iterate_items():
         items.append({
