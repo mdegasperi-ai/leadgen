@@ -34,18 +34,43 @@ export async function POST(req: Request) {
     })
 
     // Call worker
-    const workerUrl = process.env.WORKER_URL || 'http://localhost:8000'
+    const workerUrl = (process.env.WORKER_URL || 'http://localhost:8000').trim()
     const endpoint = source === 'google_maps' ? '/scraper/google-maps' : '/scraper/linkedin'
 
-    const scrapeRes = await fetch(`${workerUrl}${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query, location, max_results: maxResults }),
-    })
+    let rawLeads: any[] = []
+    try {
+      const scrapeRes = await fetch(`${workerUrl}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, location, max_results: maxResults }),
+      })
 
-    if (!scrapeRes.ok) throw new Error('Worker error')
+      if (!scrapeRes.ok) {
+        const body = await scrapeRes.text()
+        await prisma.campaign.update({
+          where: { id: campaign.id },
+          data: { status: 'failed' },
+        })
+        return NextResponse.json({
+          error: 'Worker error',
+          detail: `Worker responded ${scrapeRes.status}: ${body.slice(0, 300)}`,
+          workerUrl: `${workerUrl}${endpoint}`,
+        }, { status: 502 })
+      }
 
-    const { leads: rawLeads } = await scrapeRes.json()
+      const data = await scrapeRes.json()
+      rawLeads = data.leads || []
+    } catch (workerErr: any) {
+      await prisma.campaign.update({
+        where: { id: campaign.id },
+        data: { status: 'failed' },
+      })
+      return NextResponse.json({
+        error: 'Cannot reach worker',
+        detail: workerErr?.message || String(workerErr),
+        workerUrl: `${workerUrl}${endpoint}`,
+      }, { status: 502 })
+    }
 
     // Save leads + AI score each one
     const savedLeads = await Promise.all(
