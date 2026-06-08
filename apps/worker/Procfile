@@ -1,1 +1,1 @@
-web: uvicorn main:app --host :: --port 8000
+web: bash start.sh

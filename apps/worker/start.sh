@@ -1,0 +1,2 @@
+#!/bin/bash
+uvicorn main:app --host :: --port 8000
