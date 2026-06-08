@@ -79,7 +79,7 @@ export async function POST(req: Request) {
         let scoreReason = null
         let message = null
 
-        if (icpDesc && lead.name) {
+        if (lead.name) {
           try {
             const [scoreRes, msgRes] = await Promise.all([
               fetch(`${workerUrl}/leads/score`, {
