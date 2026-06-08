@@ -29,7 +29,13 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       <nav className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-        <span className="font-bold text-slate-900">Leadgen</span>
+        <div className="flex items-center gap-6">
+          <span className="font-bold text-slate-900">Leadgen</span>
+          <div className="flex gap-4 text-sm">
+            <Link href="/dashboard" className="text-sky-600 font-medium">Dashboard</Link>
+            <Link href="/pipeline" className="text-slate-500 hover:text-slate-800">Pipeline</Link>
+          </div>
+        </div>
         <div className="flex items-center gap-4">
           <Link href="/search" className="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg text-sm font-semibold transition">
             + Nuova ricerca

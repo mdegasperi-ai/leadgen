@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { buildDedupeKey } from '@/lib/dedupe'
 
 export async function POST(req: Request) {
   try {
@@ -72,9 +73,27 @@ export async function POST(req: Request) {
       }, { status: 502 })
     }
 
-    // Save leads + AI score each one
+    // --- Deduplication: drop leads we already have for this user ---
+    const existing = await prisma.lead.findMany({
+      where: { userId: user.id, dedupeKey: { not: null } },
+      select: { dedupeKey: true },
+    })
+    const seenKeys = new Set(existing.map((l) => l.dedupeKey as string))
+
+    const uniqueLeads: { lead: any; key: string | null }[] = []
+    for (const lead of rawLeads) {
+      const key = buildDedupeKey(lead)
+      // Skip if duplicate of an existing lead, or of another lead in this same batch
+      if (key && seenKeys.has(key)) continue
+      if (key) seenKeys.add(key)
+      uniqueLeads.push({ lead, key })
+    }
+
+    const skipped = rawLeads.length - uniqueLeads.length
+
+    // Save unique leads + AI score each one
     const savedLeads = await Promise.all(
-      rawLeads.map(async (lead: any) => {
+      uniqueLeads.map(async ({ lead, key }) => {
         let score = null
         let scoreReason = null
         let message = null
@@ -119,12 +138,16 @@ export async function POST(req: Request) {
             scoreReason,
             message,
             rawData: lead,
+            dedupeKey: key,
+            activities: {
+              create: { type: 'created', content: `Lead importato da ${source}` },
+            },
           },
         })
       })
     )
 
-    // Update campaign + deduct credits
+    // Update campaign + deduct credits (only for leads actually saved)
     await Promise.all([
       prisma.campaign.update({
         where: { id: campaign.id },
@@ -136,7 +159,7 @@ export async function POST(req: Request) {
       }),
     ])
 
-    return NextResponse.json({ success: true, count: savedLeads.length })
+    return NextResponse.json({ success: true, count: savedLeads.length, skipped })
   } catch (error: any) {
     console.error('[SEARCH ERROR]', error)
     return NextResponse.json({
