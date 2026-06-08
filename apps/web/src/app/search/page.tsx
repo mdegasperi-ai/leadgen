@@ -35,7 +35,8 @@ export default function SearchPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || 'Errore durante la ricerca')
+        const parts = [data.error, data.detail, data.workerUrl].filter(Boolean)
+        setError(parts.join(' — ') || 'Errore durante la ricerca')
         setLoading(false)
         return
       }
