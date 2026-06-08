@@ -38,20 +38,56 @@ async def run_google_maps_scraper(query: str, location: str, max_results: int) -
     return items
 
 
-async def run_linkedin_scraper(keywords: str, location: str | None, max_results: int) -> list:
+def _first(*vals):
+    for v in vals:
+        if v:
+            return v
+    return None
+
+
+async def run_linkedin_scraper(query: str, location: str | None, max_results: int) -> list:
     run_input = {
-        "searchUrl": f"https://www.linkedin.com/search/results/people/?keywords={keywords}",
-        "maxResults": max_results,
+        "searchQuery": query,
+        "maxItems": max_results,
+        "profileScraperMode": "Full + email search",
     }
-    run = client.actor("apify/linkedin-profile-scraper").call(run_input=run_input)
+    if location:
+        run_input["locations"] = [location]
+
+    run = client.actor("harvestapi/linkedin-profile-search").call(run_input=run_input)
     items = []
     for item in client.dataset(run["defaultDatasetId"]).iterate_items():
+        # Name can be a single field or first/last
+        name = _first(
+            item.get("name"),
+            item.get("fullName"),
+            " ".join(filter(None, [item.get("firstName"), item.get("lastName")])) or None,
+        )
+
+        # Current position: array or object depending on mode
+        company = None
+        title = item.get("headline")
+        pos = item.get("currentPosition") or item.get("experience")
+        if isinstance(pos, list) and pos:
+            company = _first(pos[0].get("companyName"), pos[0].get("company"))
+            title = _first(title, pos[0].get("title"), pos[0].get("position"))
+        elif isinstance(pos, dict):
+            company = _first(pos.get("companyName"), pos.get("company"))
+
+        company = _first(company, item.get("companyName"))
+
+        # Location can be a string or an object
+        loc = item.get("location")
+        if isinstance(loc, dict):
+            loc = _first(loc.get("linkedinText"), loc.get("text"), loc.get("name"))
+
         items.append({
-            "name": item.get("fullName"),
-            "title": item.get("headline"),
-            "company": item.get("companyName"),
-            "location": item.get("location"),
-            "profile_url": item.get("linkedinUrl"),
+            "name": name,
+            "email": item.get("email"),
+            "title": title,
+            "company": company,
+            "address": loc,
+            "website": _first(item.get("linkedinUrl"), item.get("url")),
             "source": "linkedin",
         })
     return items
