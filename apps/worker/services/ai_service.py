@@ -4,7 +4,7 @@ import re
 import anthropic
 
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", ""))
-MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-3-5-haiku-latest")
+MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5")
 
 
 def _extract_json(text: str) -> dict:
